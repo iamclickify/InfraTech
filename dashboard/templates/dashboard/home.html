@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infratech</title>
+</head>
+<body>
+    <h1>Infrastructure Dashboard</h1>
+    <h2>{{ server_name }}</h2>
+    <p>CPU Usage: {{ cpu }}%</p>
+    <p>RAM Usage: {{ ram }}%</p>
+    <p>Disk Usage: {{ disk }}%</p>
+    <p>Uptime: {{ uptime }} hours</p>
+
+    <h2>Recent Metrics</h2>
+    <ul>
+    {% for metric in recent_metrics %}
+    <li>
+    Time: {{ metric.created_at }} -
+    CPU: {{ metric.cpu }}%
+    RAM: {{ metric.ram }}%
+    Disk: {{ metric.disk }}%
+    </li>
+    {% endfor %}
+    </ul>
+
+    <h2>CPU Usage History</h2>
+    <canvas id="cpuChart"></canvas>
+    {{ labels|json_script:"chart-labels" }}
+    {{ cpu_data|json_script:"cpu-data" }}
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = JSON.parse(
+            document.getElementById(
+                'chart-labels'
+            ).textContent
+        );
+
+        const cpuData = JSON.parse(
+            document.getElementById(
+                'cpu-data'
+            ).textContent
+        );
+
+        new Chart(
+            document.getElementById('cpuChart'),
+            {
+                type: 'line',
+
+                data: {
+                    labels: labels,
+
+                    datasets: [{
+                        label: 'CPU Usage %',
+                        data: cpuData
+                    }]
+                }
+            }
+        );
+    </script>
+</body>
+</html>
