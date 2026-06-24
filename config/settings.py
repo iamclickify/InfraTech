@@ -121,3 +121,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# SSH VM Settings
+SSH_VM_HOST = '4.213.48.203'
+SSH_VM_USERNAME = 'shubham'
+SSH_VM_KEY_PATH = BASE_DIR / 'ssh_keys' / 'infratech_key.pem'
+

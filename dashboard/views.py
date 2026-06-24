@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .models import Metric
 from django.utils import timezone
+from django.conf import settings
 
 def home(request):
 
@@ -38,6 +39,7 @@ def home(request):
     context = {
         "latest_metric": latest_metric,
         "recent_metrics": recent_metrics,
+        "server_name": settings.SSH_VM_HOST,
 
         "labels": labels,
         "cpu_data": cpu_data,
@@ -49,4 +51,4 @@ def home(request):
         request,
         "dashboard/home.html",
         context
-    )
+    )

@@ -7,11 +7,15 @@
 </head>
 <body>
     <h1>Infrastructure Dashboard</h1>
-    <h2>{{ server_name }}</h2>
-    <p>CPU Usage: {{ cpu }}%</p>
-    <p>RAM Usage: {{ ram }}%</p>
-    <p>Disk Usage: {{ disk }}%</p>
-    <p>Uptime: {{ uptime }} hours</p>
+    <h2>Server: {{ server_name }}</h2>
+    {% if latest_metric %}
+    <p>CPU Usage: {{ latest_metric.cpu }}%</p>
+    <p>RAM Usage: {{ latest_metric.ram }}%</p>
+    <p>Disk Usage: {{ latest_metric.disk }}%</p>
+    <p>Uptime: {{ latest_metric.uptime }} hours</p>
+    {% else %}
+    <p>No metrics collected yet.</p>
+    {% endif %}
 
     <h2>Recent Metrics</h2>
     <ul>

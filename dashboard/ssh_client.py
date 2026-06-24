@@ -1,32 +1,47 @@
+from django.conf import settings
 import paramiko
 import re
+import logging
 
+logger = logging.getLogger(__name__)
 
-HOST = "4.213.48.203"
-USERNAME = "shubham"
-KEY_FILE = "/app/ssh_keys/devops-ubuntu_key.pem"
 
 def run_command(command):
-    key = paramiko.RSAKey.from_private_key_file(KEY_FILE)
+    try:
+        # Load the key using the path from settings
+        key = paramiko.RSAKey.from_private_key_file(str(settings.SSH_VM_KEY_PATH))
+    except Exception as e:
+        logger.error(f"Failed to load SSH private key: {e}")
+        raise RuntimeError(f"Failed to load SSH private key: {e}")
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(
         paramiko.AutoAddPolicy()
     )
 
-    client.connect(
-        hostname=HOST,
-        username=USERNAME,
-        pkey=key
-    )
+    try:
+        client.connect(
+            hostname=settings.SSH_VM_HOST,
+            username=settings.SSH_VM_USERNAME,
+            pkey=key,
+            timeout=10  # Add timeout to prevent hanging on connection failure
+        )
+    except Exception as e:
+        logger.error(f"Failed to connect to VM via SSH ({settings.SSH_VM_HOST}): {e}")
+        client.close()
+        raise ConnectionError(f"SSH connection failed: {e}")
 
-    stdin, stdout, stderr = client.exec_command(command)
-
-    output = stdout.read().decode()
-
-    client.close()
+    try:
+        stdin, stdout, stderr = client.exec_command(command)
+        output = stdout.read().decode()
+    except Exception as e:
+        logger.error(f"Failed to execute command '{command}': {e}")
+        raise RuntimeError(f"Command execution failed: {e}")
+    finally:
+        client.close()
 
     return output
+
 
 
 def get_ram_usage():
