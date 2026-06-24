@@ -10,19 +10,29 @@ class Command(BaseCommand):
     help = "Collect system metrics"
 
     def handle(self, *args, **kwargs):
+        from django.core.management.base import BaseCommand
 
-        cpu = psutil.cpu_percent(interval=1)
-        ram = psutil.virtual_memory().percent
-        disk = psutil.disk_usage('/').percent
+from dashboard.models import Metric
+from dashboard.ssh_client import get_remote_metrics
+
+
+class Command(BaseCommand):
+
+    help = "Collect system metrics"
+
+    def handle(self, *args, **kwargs):
+
+        metrics = get_remote_metrics()
 
         Metric.objects.create(
-            cpu=cpu,
-            ram=ram,
-            disk=disk
+            cpu=metrics["cpu"],
+            ram=metrics["ram"],
+            disk=metrics["disk"],
+            uptime=metrics["uptime"]
         )
 
         self.stdout.write(
             self.style.SUCCESS(
-                "Metric saved"
+                "Azure VM metrics saved"
             )
         )
