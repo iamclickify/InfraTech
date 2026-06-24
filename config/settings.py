@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import pymysql
 pymysql.install_as_MySQLdb()
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +27,7 @@ SECRET_KEY = 'django-insecure-d33+22p&2h)()d&7+)+t3-0t1+nkqtfu*i=1w6ee@2(1*5=!_z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -121,9 +122,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # SSH VM Settings
-SSH_VM_HOST = '4.213.48.203'
-SSH_VM_USERNAME = 'shubham'
-SSH_VM_KEY_PATH = BASE_DIR / 'ssh_keys' / 'infratech_key.pem'
+SSH_VM_HOST = os.environ.get('SSH_VM_HOST', '4.213.48.203')
+SSH_VM_USERNAME = os.environ.get('SSH_VM_USERNAME', 'shubham')
+SSH_VM_KEY_PATH = BASE_DIR / 'ssh_keys' / os.environ.get('SSH_VM_KEY_NAME', 'infratech_key.pem')
 

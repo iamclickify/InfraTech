@@ -1,68 +1,311 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infratech</title>
+    <title>Infratech - System Monitor</title>
+    <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
 </head>
 <body>
-    <h1>Infrastructure Dashboard</h1>
-    <h2>Server: {{ server_name }}</h2>
-    {% if latest_metric %}
-    <p>CPU Usage: {{ latest_metric.cpu }}%</p>
-    <p>RAM Usage: {{ latest_metric.ram }}%</p>
-    <p>Disk Usage: {{ latest_metric.disk }}%</p>
-    <p>Uptime: {{ latest_metric.uptime }} hours</p>
-    {% else %}
-    <p>No metrics collected yet.</p>
-    {% endif %}
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div>
+                <h1>Infratech</h1>
+                <p style="color: var(--text-secondary); margin-top: 0.25rem;">A real time VM monitoring system</p>
+            </div>
+            <div class="server-badge">
+                Server: {{ server_name }}
+            </div>
+        </header>
 
-    <h2>Recent Metrics</h2>
-    <ul>
-    {% for metric in recent_metrics %}
-    <li>
-    Time: {{ metric.created_at }} -
-    CPU: {{ metric.cpu }}%
-    RAM: {{ metric.ram }}%
-    Disk: {{ metric.disk }}%
-    </li>
-    {% endfor %}
-    </ul>
+        <!-- Alerts -->
+        {% if analytics.alerts %}
+        <div class="alerts-container">
+            {% for alert in analytics.alerts %}
+            <div class="alert-card">
+                <span class="badge badge-danger">ALERT</span>
+                <span>{{ alert }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-    <h2>CPU Usage History</h2>
-    <canvas id="cpuChart"></canvas>
+        <!-- Live Metrics Cards -->
+        <div class="dashboard-grid">
+            <!-- CPU -->
+            <div class="card">
+                <div class="card-title">CPU Utilization</div>
+                {% if latest_metric %}
+                <div class="card-value">
+                    {{ latest_metric.cpu }}<span class="card-unit">%</span>
+                </div>
+                <div class="card-bar-bg">
+                    <div class="card-bar bg-cpu" style="width: {{ latest_metric.cpu }}%;"></div>
+                </div>
+                {% else %}
+                <p style="color: var(--text-secondary);">No metrics captured yet</p>
+                {% endif %}
+            </div>
+
+            <!-- RAM -->
+            <div class="card">
+                <div class="card-title">Memory Usage</div>
+                {% if latest_metric %}
+                <div class="card-value">
+                    {{ latest_metric.ram }}<span class="card-unit">%</span>
+                </div>
+                <div class="card-bar-bg">
+                    <div class="card-bar bg-ram" style="width: {{ latest_metric.ram }}%;"></div>
+                </div>
+                {% else %}
+                <p style="color: var(--text-secondary);">No metrics captured yet</p>
+                {% endif %}
+            </div>
+
+            <!-- Disk -->
+            <div class="card">
+                <div class="card-title">Disk Allocation</div>
+                {% if latest_metric %}
+                <div class="card-value">
+                    {{ latest_metric.disk }}<span class="card-unit">%</span>
+                </div>
+                <div class="card-bar-bg">
+                    <div class="card-bar bg-disk" style="width: {{ latest_metric.disk }}%;"></div>
+                </div>
+                {% else %}
+                <p style="color: var(--text-secondary);">No metrics captured yet</p>
+                {% endif %}
+            </div>
+
+            <!-- Uptime -->
+            <div class="card">
+                <div class="card-title">System Uptime</div>
+                {% if latest_metric %}
+                <div class="card-value">
+                    {{ latest_metric.uptime }}<span class="card-unit"> hrs</span>
+                </div>
+                <div class="card-bar-bg">
+                    <div class="card-bar bg-uptime" style="width: 100%;"></div>
+                </div>
+                {% else %}
+                <p style="color: var(--text-secondary);">No metrics captured yet</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Metrics Analytics Overview -->
+        <div class="analytics-section">
+            <div class="section-header">Performance Analytics</div>
+            <div class="analytics-grid">
+                <!-- 1 Hour averages -->
+                <div class="analytic-box">
+                    <h4>1-Hour Averages</h4>
+                    <div class="analytic-stat-row">
+                        <span class="analytic-stat-label">CPU</span>
+                        <span class="analytic-stat-value">{{ analytics.hour_stats.cpu }}%</span>
+                    </div>
+                    <div class="analytic-stat-row">
+                        <span class="analytic-stat-label">RAM</span>
+                        <span class="analytic-stat-value">{{ analytics.hour_stats.ram }}%</span>
+                    </div>
+                    <div class="analytic-stat-row">
+                        <span class="analytic-stat-label">Disk</span>
+                        <span class="analytic-stat-value">{{ analytics.hour_stats.disk }}%</span>
+                    </div>
+                </div>
+
+                <!-- 24 Hour averages -->
+                <div class="analytic-box">
+                    <h4>24-Hour Averages</h4>
+                    <div class="analytic-stat-row">
+                        <span class="analytic-stat-label">CPU</span>
+                        <span class="analytic-stat-value">{{ analytics.day_stats.cpu }}%</span>
+                    </div>
+                    <div class="analytic-stat-row">
+                        <span class="analytic-stat-label">RAM</span>
+                        <span class="analytic-stat-value">{{ analytics.day_stats.ram }}%</span>
+                    </div>
+                    <div class="analytic-stat-row">
+                        <span class="analytic-stat-label">Disk</span>
+                        <span class="analytic-stat-value">{{ analytics.day_stats.disk }}%</span>
+                    </div>
+                </div>
+
+                <!-- Peak values -->
+                <div class="analytic-box">
+                    <h4>Lifetime Peak Records</h4>
+                    <div class="analytic-stat-row">
+                        <span class="analytic-stat-label">Peak CPU Spike</span>
+                        <span class="analytic-stat-value" style="color: var(--accent-red)">{{ analytics.peaks.cpu }}%</span>
+                    </div>
+                    <div class="analytic-stat-row">
+                        <span class="analytic-stat-label">Peak Memory Spike</span>
+                        <span class="analytic-stat-value" style="color: var(--accent-red)">{{ analytics.peaks.ram }}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts History Grid -->
+        <div class="charts-grid">
+            <!-- CPU Chart -->
+            <div class="chart-card">
+                <div class="chart-title">CPU Load history</div>
+                <div class="chart-container">
+                    <canvas id="cpuChart"></canvas>
+                </div>
+            </div>
+
+            <!-- RAM Chart -->
+            <div class="chart-card">
+                <div class="chart-title">Memory Allocation History</div>
+                <div class="chart-container">
+                    <canvas id="ramChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Log History Table -->
+        <div class="table-section">
+            <div class="section-header">Metric Capture History</div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Captured Timestamp</th>
+                            <th>CPU</th>
+                            <th>RAM</th>
+                            <th>Disk Space Used</th>
+                            <th>Status Note (Editable)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for metric in recent_metrics %}
+                        <tr>
+                            <td style="font-weight: 500;">{{ metric.created_at }}</td>
+                            <td>
+                                <span class="badge {% if metric.cpu < 60 %}badge-success{% elif metric.cpu < 85 %}badge-warning{% else %}badge-danger{% endif %}">
+                                    {{ metric.cpu }}%
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if metric.ram < 60 %}badge-success{% elif metric.ram < 85 %}badge-warning{% else %}badge-danger{% endif %}">
+                                    {{ metric.ram }}%
+                                </span>
+                            </td>
+                            <td>{{ metric.disk }}%</td>
+                            <td class="note-cell">
+                                <div id="note-display-{{ metric.id }}" class="note-display">
+                                    <span class="note-text">{{ metric.note|default:"—" }}</span>
+                                    <button class="note-edit-btn" onclick="showEditForm({{ metric.id }})">Edit</button>
+                                </div>
+                                <form id="note-form-{{ metric.id }}" class="note-form" action="{% url 'update_metric_note' metric.id %}" method="POST" style="display:none;">
+                                    {% csrf_token %}
+                                    <input type="text" name="note" class="note-input" value="{{ metric.note|default:'' }}" placeholder="Add note...">
+                                    <button type="submit" class="note-save-btn">Save</button>
+                                    <button type="button" class="note-cancel-btn" onclick="hideEditForm({{ metric.id }})">Cancel</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                                No captured metrics available. Check if your VM is reachable.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Scripts Data -->
     {{ labels|json_script:"chart-labels" }}
     {{ cpu_data|json_script:"cpu-data" }}
-    
+    {{ ram_data|json_script:"ram-data" }}
+    {{ disk_data|json_script:"disk-data" }}
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const labels = JSON.parse(
-            document.getElementById(
-                'chart-labels'
-            ).textContent
-        );
+        // Note inline edit script
+        function showEditForm(id) {
+            document.getElementById('note-display-' + id).style.display = 'none';
+            document.getElementById('note-form-' + id).style.display = 'flex';
+            document.getElementById('note-form-' + id).querySelector('.note-input').focus();
+        }
 
-        const cpuData = JSON.parse(
-            document.getElementById(
-                'cpu-data'
-            ).textContent
-        );
+        function hideEditForm(id) {
+            document.getElementById('note-display-' + id).style.display = 'flex';
+            document.getElementById('note-form-' + id).style.display = 'none';
+        }
 
-        new Chart(
-            document.getElementById('cpuChart'),
-            {
-                type: 'line',
+        // Charts configuration
+        const labels = JSON.parse(document.getElementById('chart-labels').textContent);
+        const cpuData = JSON.parse(document.getElementById('cpu-data').textContent);
+        const ramData = JSON.parse(document.getElementById('ram-data').textContent);
 
-                data: {
-                    labels: labels,
-
-                    datasets: [{
-                        label: 'CPU Usage %',
-                        data: cpuData
-                    }]
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.03)' },
+                    ticks: { color: '#9ca3af', font: { size: 10 } }
+                },
+                y: {
+                    grid: { color: 'rgba(255, 255, 255, 0.03)' },
+                    ticks: { color: '#9ca3af', font: { size: 10 } },
+                    min: 0,
+                    max: 100
                 }
             }
-        );
+        };
+
+        // CPU Line Chart
+        new Chart(document.getElementById('cpuChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'CPU Usage %',
+                    data: cpuData,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointRadius: 1,
+                    pointHoverRadius: 4
+                }]
+            },
+            options: chartOptions
+        });
+
+        // RAM Line Chart
+        new Chart(document.getElementById('ramChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'RAM Usage %',
+                    data: ramData,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    borderWidth: 2,
+                    pointRadius: 1,
+                    pointHoverRadius: 4
+                }]
+            },
+            options: chartOptions
+        });
     </script>
 </body>
 </html>

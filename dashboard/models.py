@@ -5,6 +5,7 @@ class Metric(models.Model):
     ram = models.FloatField()
     disk = models.FloatField()
     uptime = models.FloatField()
+    note = models.TextField(blank=True, null=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -1,7 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.http import require_POST
 from .models import Metric
 from django.utils import timezone
 from django.conf import settings
+from .analytics import calculate_analytics
 
 def home(request):
 
@@ -36,6 +38,8 @@ def home(request):
         ram_data.append(metric.ram)
         disk_data.append(metric.disk)
 
+    analytics = calculate_analytics()
+
     context = {
         "latest_metric": latest_metric,
         "recent_metrics": recent_metrics,
@@ -45,10 +49,20 @@ def home(request):
         "cpu_data": cpu_data,
         "ram_data": ram_data,
         "disk_data": disk_data,
+        "analytics": analytics,
     }
 
     return render(
         request,
         "dashboard/home.html",
         context
-    )
+    )
+
+
+@require_POST
+def update_metric_note(request, metric_id):
+    metric = get_object_or_404(Metric, id=metric_id)
+    note = request.POST.get('note', '').strip()
+    metric.note = note if note else None
+    metric.save()
+    return redirect('home')
