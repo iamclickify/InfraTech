@@ -72,5 +72,8 @@ This automatically:
 1.  Waits for the MySQL database to boot and completes schema migrations.
 2.  Runs Django's asset compiler `collectstatic` to populate the shared volume.
 3.  Starts the Gunicorn web app server.
-4.  Launches Nginx to serve requests on [http://localhost/](http://localhost/).
+4.  Launches Nginx to serve requests on [http://localhost:8080](http://localhost:8080/).
 5.  Starts the scheduler to fetch remote metrics every 60 seconds.
+
+
+My objective for this project was to learn docker and containerization, and deploy a 3-tier architecture on a remote server. I'll add multiple VM management, improved UI and alert mechanism in future.

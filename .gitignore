@@ -2,3 +2,21 @@ ssh_keys/
 *.pem
 .env
 
+# Ignore python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Ignore python cache files
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore local sqlite database files
+db.sqlite3
+*.sqlite3
+
+# Ignore collected static files
+staticfiles/

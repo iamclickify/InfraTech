@@ -1,0 +1,26 @@
+# Ignore python virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Ignore git repository history
+.git/
+.gitignore
+
+# Ignore python cache files
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Ignore local databases and sqlite storage
+db.sqlite3
+*.sqlite3
+
+# Ignore environment configuration and local secrets
+.env
+.env.example
+
+# Ignore local ssh keys from being built into the image for security
+ssh_keys/
