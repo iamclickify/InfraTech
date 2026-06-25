@@ -1,4 +1,4 @@
-# Infratech - Production-Ready 3-Tier System Monitor
+# Infratech - A production ready 3-tier monitoring system
 
 Infratech is a containerized, production-ready system monitoring platform. It connects to a target remote Linux server via SSH at regular intervals, gathers telemetry data (CPU, RAM, Disk usage, and Uptime), processes analytics, and displays performance history on a premium dark-themed dashboard.
 
