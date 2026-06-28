@@ -13,6 +13,11 @@ import pymysql
 pymysql.install_as_MySQLdb()
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# Load .env file variables
+load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,6 +34,14 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+
+
 
 # Application definition
 
@@ -39,7 +52,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'dashboard'
+    'dashboard',
+    'vm_manager',
 ]
 
 MIDDLEWARE = [
@@ -128,4 +142,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 SSH_VM_HOST = os.environ.get('SSH_VM_HOST', '4.213.48.203')
 SSH_VM_USERNAME = os.environ.get('SSH_VM_USERNAME', 'shubham')
 SSH_VM_KEY_PATH = BASE_DIR / 'ssh_keys' / os.environ.get('SSH_VM_KEY_NAME', 'infratech_key.pem')
+
+# Azure VM Settings
+AZURE_SUBSCRIPTION_ID = os.environ.get('AZURE_SUBSCRIPTION_ID')
+AZURE_RESOURCE_GROUP = os.environ.get('AZURE_RESOURCE_GROUP')
+AZURE_VM_NAME = os.environ.get('AZURE_VM_NAME')
 

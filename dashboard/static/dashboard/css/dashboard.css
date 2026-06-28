@@ -54,6 +54,7 @@ h1 {
     letter-spacing: -0.025em;
     background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -400,3 +401,4 @@ tr:hover td {
 .badge-success { background: rgba(16, 185, 129, 0.15); color: #a7f3d0; }
 .badge-warning { background: rgba(245, 158, 11, 0.15); color: #fef3c7; }
 .badge-danger { background: rgba(239, 68, 68, 0.15); color: #fee2e2; }
+

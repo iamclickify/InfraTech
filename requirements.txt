@@ -3,3 +3,6 @@ pymysql
 paramiko
 cryptography
 gunicorn
+azure-identity
+azure-mgmt-compute
+python-dotenv

@@ -1,0 +1,277 @@
+/* Azure VM Hero Card style (Full Width, Prominent Header Feature) */
+.vm-hero-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 1.75rem 2rem;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+}
+
+.vm-hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #0078d4 0%, #00bcf2 100%); /* Azure colored top border */
+}
+
+.vm-hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-grow: 1;
+}
+
+.vm-hero-title-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.vm-hero-label {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.vm-hero-sub {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.vm-hero-status-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.status-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.vm-status-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.vm-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+/* VM status badge colors */
+.vm-badge-running {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+.vm-badge-starting {
+    background: rgba(245, 158, 11, 0.12);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.vm-badge-stopping {
+    background: rgba(249, 115, 22, 0.12);
+    color: #ff9d43;
+    border-color: rgba(249, 115, 22, 0.2);
+}
+
+.vm-badge-stopped {
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.vm-badge-deallocated {
+    background: rgba(156, 163, 175, 0.12);
+    color: #cbd5e1;
+    border-color: rgba(156, 163, 175, 0.2);
+}
+
+.vm-badge-restarting {
+    background: rgba(59, 130, 246, 0.12);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Badge spinner for transitional states */
+.badge-spinner {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    border-top-color: currentColor;
+    animation: spin 0.8s linear infinite;
+    margin-right: 0.15rem;
+    vertical-align: middle;
+}
+
+.vm-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Make action buttons in hero card bigger and premium */
+.vm-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-primary);
+    gap: 0.4rem;
+}
+
+.vm-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.vm-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.vm-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.01);
+    border-color: rgba(255, 255, 255, 0.02);
+    color: var(--text-secondary);
+}
+
+/* Button style overrides for specific operations */
+.vm-btn-start:hover:not(:disabled) {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.vm-btn-restart:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.12);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.vm-btn-stop:hover:not(:disabled) {
+    background: rgba(249, 115, 22, 0.12);
+    color: #ff9d43;
+    border-color: rgba(249, 115, 22, 0.3);
+}
+
+.vm-btn-deallocate:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.12);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* VM Loading State overlay */
+.vm-loader-overlay {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(11, 15, 25, 0.85);
+    backdrop-filter: blur(4px);
+    z-index: 10;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.75rem;
+    animation: fadeIn 0.3s ease;
+}
+
+.vm-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: #0078d4;
+    animation: spin 1s linear infinite;
+}
+
+.vm-loading-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.vm-error-banner {
+    display: none;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 10px;
+    padding: 0.75rem;
+    font-size: 0.825rem;
+    color: #fca5a5;
+    margin-top: 1rem;
+    position: relative;
+    animation: slideIn 0.3s ease;
+    word-break: break-word;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsive formatting */
+@media (max-width: 868px) {
+    .vm-hero-card {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1.5rem;
+        gap: 1.5rem;
+    }
+    
+    .vm-hero-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        width: 100%;
+        gap: 0.5rem;
+    }
+}

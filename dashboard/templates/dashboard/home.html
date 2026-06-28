@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Infratech - System Monitor</title>
     <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/css/vm_manager.css' %}">
 </head>
 <body>
     <div class="container">
@@ -21,77 +22,105 @@
         </header>
 
         <!-- Alerts -->
-        {% if analytics.alerts %}
-        <div class="alerts-container">
+        <div class="alerts-container" id="alerts-container">
+            {% if analytics.alerts %}
             {% for alert in analytics.alerts %}
             <div class="alert-card">
                 <span class="badge badge-danger">ALERT</span>
                 <span>{{ alert }}</span>
             </div>
             {% endfor %}
+            {% endif %}
         </div>
-        {% endif %}
+
+        <!-- Azure VM Hero Control Panel -->
+        <div class="vm-hero-card" id="azure-vm-card">
+            <!-- Loader Overlay -->
+            <div class="vm-loader-overlay" id="vm-loader">
+                <div class="vm-spinner"></div>
+                <div class="vm-loading-text" id="vm-loader-text">Processing request...</div>
+            </div>
+
+            <!-- Left: Info -->
+            <div class="vm-hero-info">
+                <div class="vm-hero-title-row">
+                    <span class="vm-hero-label">Azure VM Management</span>
+                    <span class="vm-hero-sub" id="vm-resource-info">Checking configuration...</span>
+                </div>
+                <div class="vm-hero-status-row">
+                    <span class="status-label">Status:</span>
+                    <div class="vm-status-container">
+                        <span id="vm-status-badge" class="vm-badge">
+                            <span id="vm-status-text">Checking...</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Actions -->
+            <div class="vm-hero-actions">
+                <button class="vm-btn vm-btn-start" id="btn-start" onclick="handleVMAction('start')" disabled>
+                    <span>▶</span> Start VM
+                </button>
+                <button class="vm-btn vm-btn-restart" id="btn-restart" onclick="handleVMAction('restart')" disabled>
+                    <span>🔄</span> Restart
+                </button>
+                <button class="vm-btn vm-btn-stop" id="btn-stop" onclick="handleVMAction('stop')" disabled>
+                    <span>⏹</span> Stop
+                </button>
+                <button class="vm-btn vm-btn-deallocate" id="btn-deallocate" onclick="handleVMAction('deallocate')" disabled>
+                    <span>⏏</span> Deallocate
+                </button>
+            </div>
+
+            <!-- Error banner -->
+            <div class="vm-error-banner" id="vm-error-banner"></div>
+        </div>
 
         <!-- Live Metrics Cards -->
         <div class="dashboard-grid">
             <!-- CPU -->
             <div class="card">
                 <div class="card-title">CPU Utilization</div>
-                {% if latest_metric %}
-                <div class="card-value">
-                    {{ latest_metric.cpu }}<span class="card-unit">%</span>
+                <div class="card-value" id="latest-cpu-val">
+                    {% if latest_metric %}{{ latest_metric.cpu }}{% else %}—{% endif %}<span class="card-unit">%</span>
                 </div>
                 <div class="card-bar-bg">
-                    <div class="card-bar bg-cpu" style="width: {{ latest_metric.cpu }}%;"></div>
+                    <div class="card-bar bg-cpu" id="latest-cpu-bar" data-width="{% if latest_metric %}{{ latest_metric.cpu }}{% else %}0{% endif %}"></div>
                 </div>
-                {% else %}
-                <p style="color: var(--text-secondary);">No metrics captured yet</p>
-                {% endif %}
             </div>
 
             <!-- RAM -->
             <div class="card">
                 <div class="card-title">Memory Usage</div>
-                {% if latest_metric %}
-                <div class="card-value">
-                    {{ latest_metric.ram }}<span class="card-unit">%</span>
+                <div class="card-value" id="latest-ram-val">
+                    {% if latest_metric %}{{ latest_metric.ram }}{% else %}—{% endif %}<span class="card-unit">%</span>
                 </div>
                 <div class="card-bar-bg">
-                    <div class="card-bar bg-ram" style="width: {{ latest_metric.ram }}%;"></div>
+                    <div class="card-bar bg-ram" id="latest-ram-bar" data-width="{% if latest_metric %}{{ latest_metric.ram }}{% else %}0{% endif %}"></div>
                 </div>
-                {% else %}
-                <p style="color: var(--text-secondary);">No metrics captured yet</p>
-                {% endif %}
             </div>
 
             <!-- Disk -->
             <div class="card">
                 <div class="card-title">Disk Allocation</div>
-                {% if latest_metric %}
-                <div class="card-value">
-                    {{ latest_metric.disk }}<span class="card-unit">%</span>
+                <div class="card-value" id="latest-disk-val">
+                    {% if latest_metric %}{{ latest_metric.disk }}{% else %}—{% endif %}<span class="card-unit">%</span>
                 </div>
                 <div class="card-bar-bg">
-                    <div class="card-bar bg-disk" style="width: {{ latest_metric.disk }}%;"></div>
+                    <div class="card-bar bg-disk" id="latest-disk-bar" data-width="{% if latest_metric %}{{ latest_metric.disk }}{% else %}0{% endif %}"></div>
                 </div>
-                {% else %}
-                <p style="color: var(--text-secondary);">No metrics captured yet</p>
-                {% endif %}
             </div>
 
             <!-- Uptime -->
             <div class="card">
                 <div class="card-title">System Uptime</div>
-                {% if latest_metric %}
-                <div class="card-value">
-                    {{ latest_metric.uptime }}<span class="card-unit"> hrs</span>
+                <div class="card-value" id="latest-uptime-val">
+                    {% if latest_metric %}{{ latest_metric.uptime }}{% else %}—{% endif %}<span class="card-unit"> hrs</span>
                 </div>
                 <div class="card-bar-bg">
                     <div class="card-bar bg-uptime" style="width: 100%;"></div>
                 </div>
-                {% else %}
-                <p style="color: var(--text-secondary);">No metrics captured yet</p>
-                {% endif %}
             </div>
         </div>
 
@@ -104,15 +133,15 @@
                     <h4>1-Hour Averages</h4>
                     <div class="analytic-stat-row">
                         <span class="analytic-stat-label">CPU</span>
-                        <span class="analytic-stat-value">{{ analytics.hour_stats.cpu }}%</span>
+                        <span class="analytic-stat-value" id="stat-hour-cpu">{{ analytics.hour_stats.cpu }}%</span>
                     </div>
                     <div class="analytic-stat-row">
                         <span class="analytic-stat-label">RAM</span>
-                        <span class="analytic-stat-value">{{ analytics.hour_stats.ram }}%</span>
+                        <span class="analytic-stat-value" id="stat-hour-ram">{{ analytics.hour_stats.ram }}%</span>
                     </div>
                     <div class="analytic-stat-row">
                         <span class="analytic-stat-label">Disk</span>
-                        <span class="analytic-stat-value">{{ analytics.hour_stats.disk }}%</span>
+                        <span class="analytic-stat-value" id="stat-hour-disk">{{ analytics.hour_stats.disk }}%</span>
                     </div>
                 </div>
 
@@ -121,15 +150,15 @@
                     <h4>24-Hour Averages</h4>
                     <div class="analytic-stat-row">
                         <span class="analytic-stat-label">CPU</span>
-                        <span class="analytic-stat-value">{{ analytics.day_stats.cpu }}%</span>
+                        <span class="analytic-stat-value" id="stat-day-cpu">{{ analytics.day_stats.cpu }}%</span>
                     </div>
                     <div class="analytic-stat-row">
                         <span class="analytic-stat-label">RAM</span>
-                        <span class="analytic-stat-value">{{ analytics.day_stats.ram }}%</span>
+                        <span class="analytic-stat-value" id="stat-day-ram">{{ analytics.day_stats.ram }}%</span>
                     </div>
                     <div class="analytic-stat-row">
                         <span class="analytic-stat-label">Disk</span>
-                        <span class="analytic-stat-value">{{ analytics.day_stats.disk }}%</span>
+                        <span class="analytic-stat-value" id="stat-day-disk">{{ analytics.day_stats.disk }}%</span>
                     </div>
                 </div>
 
@@ -138,15 +167,16 @@
                     <h4>Lifetime Peak Records</h4>
                     <div class="analytic-stat-row">
                         <span class="analytic-stat-label">Peak CPU Spike</span>
-                        <span class="analytic-stat-value" style="color: var(--accent-red)">{{ analytics.peaks.cpu }}%</span>
+                        <span class="analytic-stat-value" id="stat-peak-cpu" style="color: var(--accent-red)">{{ analytics.peaks.cpu }}%</span>
                     </div>
                     <div class="analytic-stat-row">
                         <span class="analytic-stat-label">Peak Memory Spike</span>
-                        <span class="analytic-stat-value" style="color: var(--accent-red)">{{ analytics.peaks.ram }}%</span>
+                        <span class="analytic-stat-value" id="stat-peak-ram" style="color: var(--accent-red)">{{ analytics.peaks.ram }}%</span>
                     </div>
                 </div>
             </div>
         </div>
+
 
         <!-- Charts History Grid -->
         <div class="charts-grid">
@@ -181,7 +211,7 @@
                             <th>Status Note (Editable)</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="metrics-table-body">
                         {% for metric in recent_metrics %}
                         <tr>
                             <td style="font-weight: 500;">{{ metric.created_at }}</td>
@@ -199,13 +229,13 @@
                             <td class="note-cell">
                                 <div id="note-display-{{ metric.id }}" class="note-display">
                                     <span class="note-text">{{ metric.note|default:"—" }}</span>
-                                    <button class="note-edit-btn" onclick="showEditForm({{ metric.id }})">Edit</button>
+                                    <button class="note-edit-btn" onclick="showEditForm('{{ metric.id }}')">Edit</button>
                                 </div>
                                 <form id="note-form-{{ metric.id }}" class="note-form" action="{% url 'update_metric_note' metric.id %}" method="POST" style="display:none;">
                                     {% csrf_token %}
                                     <input type="text" name="note" class="note-input" value="{{ metric.note|default:'' }}" placeholder="Add note...">
                                     <button type="submit" class="note-save-btn">Save</button>
-                                    <button type="button" class="note-cancel-btn" onclick="hideEditForm({{ metric.id }})">Cancel</button>
+                                    <button type="button" class="note-cancel-btn" onclick="hideEditForm('{{ metric.id }}')">Cancel</button>
                                 </form>
                             </td>
                         </tr>
@@ -268,7 +298,7 @@
         };
 
         // CPU Line Chart
-        new Chart(document.getElementById('cpuChart'), {
+        window.cpuChart = new Chart(document.getElementById('cpuChart'), {
             type: 'line',
             data: {
                 labels: labels,
@@ -288,7 +318,7 @@
         });
 
         // RAM Line Chart
-        new Chart(document.getElementById('ramChart'), {
+        window.ramChart = new Chart(document.getElementById('ramChart'), {
             type: 'line',
             data: {
                 labels: labels,
@@ -307,5 +337,6 @@
             options: chartOptions
         });
     </script>
+    <script src="{% static 'dashboard/js/vm_manager.js' %}"></script>
 </body>
 </html>
