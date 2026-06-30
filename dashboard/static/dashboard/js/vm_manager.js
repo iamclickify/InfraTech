@@ -76,7 +76,7 @@
         const btnStart = document.getElementById('btn-start');
         const btnRestart = document.getElementById('btn-restart');
         const btnStop = document.getElementById('btn-stop');
-        const btnDeallocate = document.getElementById('btn-deallocate');
+        // const btnDeallocate = document.getElementById('btn-deallocate');
         const resourceInfo = document.getElementById('vm-resource-info');
 
         if (vmName && resourceGroup && resourceInfo) {
@@ -95,7 +95,6 @@
                 if (btnStart) btnStart.disabled = true;
                 if (btnRestart) btnRestart.disabled = false;
                 if (btnStop) btnStop.disabled = false;
-                if (btnDeallocate) btnDeallocate.disabled = false;
                 break;
             case 'Starting':
                 badge.classList.add('vm-badge-starting');
@@ -103,7 +102,6 @@
                 if (btnStart) btnStart.disabled = true;
                 if (btnRestart) btnRestart.disabled = true;
                 if (btnStop) btnStop.disabled = true;
-                if (btnDeallocate) btnDeallocate.disabled = true;
                 break;
             case 'Stopping':
                 badge.classList.add('vm-badge-stopping');
@@ -111,23 +109,20 @@
                 if (btnStart) btnStart.disabled = true;
                 if (btnRestart) btnRestart.disabled = true;
                 if (btnStop) btnStop.disabled = true;
-                if (btnDeallocate) btnDeallocate.disabled = true;
                 break;
             case 'Stopped':
                 badge.classList.add('vm-badge-stopped');
-                text.innerHTML = '🔴 Stopped';
+                text.innerHTML = '🔴 Stopped (deallocated)';
                 if (btnStart) btnStart.disabled = false;
                 if (btnRestart) btnRestart.disabled = true;
                 if (btnStop) btnStop.disabled = true;
-                if (btnDeallocate) btnDeallocate.disabled = true;
                 break;
             case 'Deallocated':
-                badge.classList.add('vm-badge-deallocated');
-                text.innerHTML = '⚫ Deallocated';
+                badge.classList.add('vm-badge-stopped');
+                text.innerHTML = '🔴 Stopped (deallocated)';
                 if (btnStart) btnStart.disabled = false;
                 if (btnRestart) btnRestart.disabled = true;
                 if (btnStop) btnStop.disabled = true;
-                if (btnDeallocate) btnDeallocate.disabled = true;
                 break;
             case 'Restarting':
                 badge.classList.add('vm-badge-restarting');
@@ -135,7 +130,6 @@
                 if (btnStart) btnStart.disabled = true;
                 if (btnRestart) btnRestart.disabled = true;
                 if (btnStop) btnStop.disabled = true;
-                if (btnDeallocate) btnDeallocate.disabled = true;
                 break;
             default:
                 badge.classList.add('vm-badge-deallocated');
@@ -143,7 +137,6 @@
                 if (btnStart) btnStart.disabled = true;
                 if (btnRestart) btnRestart.disabled = true;
                 if (btnStop) btnStop.disabled = true;
-                if (btnDeallocate) btnDeallocate.disabled = true;
                 break;
         }
 

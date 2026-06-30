@@ -1,18 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --bg-primary: #0b0f19;
-    --bg-secondary: #111827;
-    --bg-card: rgba(255, 255, 255, 0.03);
-    --border-color: rgba(255, 255, 255, 0.06);
-    --text-primary: #f3f4f6;
-    --text-secondary: #9ca3af;
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-card: rgba(255, 255, 255, 0.02);
+    --border-color: rgba(255, 255, 255, 0.05);
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
     
-    --accent-blue: #3b82f6;
-    --accent-green: #10b981;
-    --accent-red: #ef4444;
-    --accent-yellow: #f59e0b;
-    --accent-purple: #8b5cf6;
+    --accent-blue: #4ecca3;
+    --accent-green: #6c757d;
+    --accent-red: #e63946;
+    --accent-yellow: #ffb703;
+    --accent-purple: #adb5bd;
     
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -116,9 +116,9 @@ h1 {
 .card {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
+    border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-sm);
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     position: relative;
     overflow: hidden;
