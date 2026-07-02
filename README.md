@@ -48,8 +48,17 @@ graph TD
 2.  A **Target Linux Server** (AWS EC2, Azure VM, DigitalOcean Droplet, Raspberry Pi, etc.) running SSH.
 3.  **SSH Key Access:** An SSH private key (`.pem` file) configured on your laptop that has access to your server.
 
-### Step 1: Place Your SSH Key
-Put your private key file (e.g., `my_server_key.pem`) into the [ssh_keys/](file:///d:/Coding/infra-monitoring-platform/ssh_keys) directory in this project.
+### Step 1: Place and Secure Your SSH Key
+When you provision a virtual machine on cloud providers like Azure (Azure VM), AWS (EC2), or Google Cloud (GCE), you are prompted to generate or upload an SSH key pair.
+
+1. Download the private key (typically a `.pem` file, e.g., `infratech_key.pem`) provided by your provider during VM creation.
+2. Move or copy this private key file into the [ssh_keys/](file:///d:/Coding/infra-monitoring-platform/ssh_keys) directory in this project.
+3. **Set strict file permissions:** On Unix-like systems (Linux, macOS), SSH requires private keys to have restricted access permissions. If permissions are too open, connection attempts will be rejected. Run the following command:
+   ```bash
+   chmod 400 ssh_keys/your_key_name.pem
+   ```
+   *(Note: If you are running Docker on Windows, the Docker host will generally handle access control, but make sure the file is not publicly writable.)*
+4. Ensure your cloud provider's network security group (NSG) or firewall rules allow inbound TCP traffic on port 22 (SSH) to the VM.
 
 ### Step 2: Configure Environment Variables
 Copy the template environment file to create your own configuration:
