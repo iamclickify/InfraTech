@@ -4,337 +4,501 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infratech</title>
-    <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'dashboard/css/vm_manager.css' %}">
+    <title>InfraTech — Infrastructure Dashboard</title>
+    <meta name="description" content="Enterprise infrastructure monitoring and management platform">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Cache-busting static styles -->
+    <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}?v=1.0.1">
+    <link rel="stylesheet" href="{% static 'dashboard/css/vm_manager.css' %}?v=1.0.1">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <div>
-                <h1>Infratech</h1>
-                <p style="color: var(--text-secondary); margin-top: 0.25rem;">A real time VM monitoring system</p>
-            </div>
-            <div class="server-badge">
-                Server: {{ server_name }}
-            </div>
-        </header>
-
-        <!-- Alerts -->
-        <div class="alerts-container" id="alerts-container">
-            {% if analytics.alerts %}
-            {% for alert in analytics.alerts %}
-            <div class="alert-card">
-                <span class="badge badge-danger">ALERT</span>
-                <span>{{ alert }}</span>
-            </div>
-            {% endfor %}
-            {% endif %}
-        </div>
-
-        <!-- Azure VM Hero Control Panel -->
-        <div class="vm-hero-card" id="azure-vm-card">
-            <!-- Loader Overlay -->
-            <div class="vm-loader-overlay" id="vm-loader">
-                <div class="vm-spinner"></div>
-                <div class="vm-loading-text" id="vm-loader-text">Processing request...</div>
-            </div>
-
-            <!-- Left: Info -->
-            <div class="vm-hero-info">
-                <div class="vm-hero-title-row">
-                    <span class="vm-hero-label">Azure VM Management</span>
-                    <span class="vm-hero-sub" id="vm-resource-info">Checking configuration...</span>
-                </div>
-                <div class="vm-hero-status-row">
-                    <span class="status-label">Status:</span>
-                    <div class="vm-status-container">
-                        <span id="vm-status-badge" class="vm-badge">
-                            <span id="vm-status-text">Checking...</span>
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right: Actions -->
-            <div class="vm-hero-actions">
-                <button class="vm-btn vm-btn-start" id="btn-start" onclick="handleVMAction('start')" disabled>
-                    <span>▶</span> Start VM
-                </button>
-                <button class="vm-btn vm-btn-restart" id="btn-restart" onclick="handleVMAction('restart')" disabled>
-                    <span>🔄</span> Restart
-                </button>
-                <button class="vm-btn vm-btn-stop" id="btn-stop" onclick="handleVMAction('stop')" disabled>
-                    <span>⏹</span> Stop
-                </button>
-                <!-- Deallocate button removed -->
-            </div>
-
-            <!-- Error banner -->
-            <div class="vm-error-banner" id="vm-error-banner"></div>
-        </div>
-
-        <!-- Live Metrics Cards -->
-        <div class="dashboard-grid">
-            <!-- CPU -->
-            <div class="card">
-                <div class="card-title">CPU Utilization</div>
-                <div class="card-value" id="latest-cpu-val">
-                    {% if latest_metric %}{{ latest_metric.cpu }}{% else %}—{% endif %}<span class="card-unit">%</span>
-                </div>
-                <div class="card-bar-bg">
-                    <div class="card-bar bg-cpu" id="latest-cpu-bar" data-width="{% if latest_metric %}{{ latest_metric.cpu }}{% else %}0{% endif %}"></div>
-                </div>
-            </div>
-
-            <!-- RAM -->
-            <div class="card">
-                <div class="card-title">Memory Usage</div>
-                <div class="card-value" id="latest-ram-val">
-                    {% if latest_metric %}{{ latest_metric.ram }}{% else %}—{% endif %}<span class="card-unit">%</span>
-                </div>
-                <div class="card-bar-bg">
-                    <div class="card-bar bg-ram" id="latest-ram-bar" data-width="{% if latest_metric %}{{ latest_metric.ram }}{% else %}0{% endif %}"></div>
-                </div>
-            </div>
-
-            <!-- Disk -->
-            <div class="card">
-                <div class="card-title">Disk Allocation</div>
-                <div class="card-value" id="latest-disk-val">
-                    {% if latest_metric %}{{ latest_metric.disk }}{% else %}—{% endif %}<span class="card-unit">%</span>
-                </div>
-                <div class="card-bar-bg">
-                    <div class="card-bar bg-disk" id="latest-disk-bar" data-width="{% if latest_metric %}{{ latest_metric.disk }}{% else %}0{% endif %}"></div>
-                </div>
-            </div>
-
-            <!-- Uptime -->
-            <div class="card">
-                <div class="card-title">System Uptime</div>
-                <div class="card-value" id="latest-uptime-val">
-                    {% if latest_metric %}{{ latest_metric.uptime }}{% else %}—{% endif %}<span class="card-unit"> hrs</span>
-                </div>
-                <div class="card-bar-bg">
-                    <div class="card-bar bg-uptime" style="width: 100%;"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Metrics Analytics Overview -->
-        <div class="analytics-section">
-            <div class="section-header">Performance Analytics</div>
-            <div class="analytics-grid">
-                <!-- 1 Hour averages -->
-                <div class="analytic-box">
-                    <h4>1-Hour Averages</h4>
-                    <div class="analytic-stat-row">
-                        <span class="analytic-stat-label">CPU</span>
-                        <span class="analytic-stat-value" id="stat-hour-cpu">{{ analytics.hour_stats.cpu }}%</span>
-                    </div>
-                    <div class="analytic-stat-row">
-                        <span class="analytic-stat-label">RAM</span>
-                        <span class="analytic-stat-value" id="stat-hour-ram">{{ analytics.hour_stats.ram }}%</span>
-                    </div>
-                    <div class="analytic-stat-row">
-                        <span class="analytic-stat-label">Disk</span>
-                        <span class="analytic-stat-value" id="stat-hour-disk">{{ analytics.hour_stats.disk }}%</span>
-                    </div>
-                </div>
-
-                <!-- 24 Hour averages -->
-                <div class="analytic-box">
-                    <h4>24-Hour Averages</h4>
-                    <div class="analytic-stat-row">
-                        <span class="analytic-stat-label">CPU</span>
-                        <span class="analytic-stat-value" id="stat-day-cpu">{{ analytics.day_stats.cpu }}%</span>
-                    </div>
-                    <div class="analytic-stat-row">
-                        <span class="analytic-stat-label">RAM</span>
-                        <span class="analytic-stat-value" id="stat-day-ram">{{ analytics.day_stats.ram }}%</span>
-                    </div>
-                    <div class="analytic-stat-row">
-                        <span class="analytic-stat-label">Disk</span>
-                        <span class="analytic-stat-value" id="stat-day-disk">{{ analytics.day_stats.disk }}%</span>
-                    </div>
-                </div>
-
-                <!-- Peak values -->
-                <div class="analytic-box">
-                    <h4>Lifetime Peak Records</h4>
-                    <div class="analytic-stat-row">
-                        <span class="analytic-stat-label">Peak CPU Spike</span>
-                        <span class="analytic-stat-value" id="stat-peak-cpu" style="color: var(--accent-red)">{{ analytics.peaks.cpu }}%</span>
-                    </div>
-                    <div class="analytic-stat-row">
-                        <span class="analytic-stat-label">Peak Memory Spike</span>
-                        <span class="analytic-stat-value" id="stat-peak-ram" style="color: var(--accent-red)">{{ analytics.peaks.ram }}%</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Charts History Grid -->
-        <div class="charts-grid">
-            <!-- CPU Chart -->
-            <div class="chart-card">
-                <div class="chart-title">CPU Load history</div>
-                <div class="chart-container">
-                    <canvas id="cpuChart"></canvas>
-                </div>
-            </div>
-
-            <!-- RAM Chart -->
-            <div class="chart-card">
-                <div class="chart-title">Memory Allocation History</div>
-                <div class="chart-container">
-                    <canvas id="ramChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Metrics Log History Table -->
-        <div class="table-section">
-            <div class="section-header">Metric Capture History</div>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Captured Timestamp</th>
-                            <th>CPU</th>
-                            <th>RAM</th>
-                            <th>Disk Space Used</th>
-                            <th>Status Note (Editable)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="metrics-table-body">
-                        {% for metric in recent_metrics %}
-                        <tr>
-                            <td style="font-weight: 500;">{{ metric.created_at }}</td>
-                            <td>
-                                <span class="badge {% if metric.cpu < 60 %}badge-success{% elif metric.cpu < 85 %}badge-warning{% else %}badge-danger{% endif %}">
-                                    {{ metric.cpu }}%
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge {% if metric.ram < 60 %}badge-success{% elif metric.ram < 85 %}badge-warning{% else %}badge-danger{% endif %}">
-                                    {{ metric.ram }}%
-                                </span>
-                            </td>
-                            <td>{{ metric.disk }}%</td>
-                            <td class="note-cell">
-                                <div id="note-display-{{ metric.id }}" class="note-display">
-                                    <span class="note-text">{{ metric.note|default:"—" }}</span>
-                                    <button class="note-edit-btn" onclick="showEditForm('{{ metric.id }}')">Edit</button>
-                                </div>
-                                <form id="note-form-{{ metric.id }}" class="note-form" action="{% url 'update_metric_note' metric.id %}" method="POST" style="display:none;">
-                                    {% csrf_token %}
-                                    <input type="text" name="note" class="note-input" value="{{ metric.note|default:'' }}" placeholder="Add note...">
-                                    <button type="submit" class="note-save-btn">Save</button>
-                                    <button type="button" class="note-cancel-btn" onclick="hideEditForm('{{ metric.id }}')">Cancel</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 2rem;">
-                                No captured metrics available. Check if your VM is reachable.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <!-- VM Loader Overlay (global, controlled by vm_manager.js) -->
+    <div class="vm-loader-overlay" id="vm-loader">
+        <div class="vm-spinner"></div>
+        <div class="vm-loading-text" id="vm-loader-text">Processing request...</div>
     </div>
 
-    <!-- Chart Scripts Data -->
+    <div class="app-layout">
+        <!-- ============================================================
+             SIDEBAR
+             ============================================================ -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="brand-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
+                    </div>
+                    <div class="brand-text">
+                        <h1>InfraTech</h1>
+                        <span>Enterprise v1.0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a class="nav-item active" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                    <span>Dashboard</span>
+                </a>
+
+                <div class="nav-section">COMPUTE</div>
+                <a class="nav-item" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
+                    <span>Virtual Machines</span>
+                </a>
+                <a class="nav-item disabled" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h7.5"/><path d="m22 22-1.5-1.5"/><circle cx="19" cy="19" r="3"/></svg>
+                    <span>Containers</span>
+                    <span class="soon-badge">Soon</span>
+                </a>
+
+                <div class="nav-section">INFRASTRUCTURE</div>
+                <a class="nav-item disabled" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg>
+                    <span>Networks</span>
+                </a>
+
+                <div class="nav-section">MONITORING</div>
+                <a class="nav-item disabled" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    <span>Monitoring</span>
+                </a>
+
+                <div class="nav-section">OPERATIONS</div>
+                <a class="nav-item disabled" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                    <span>Logs</span>
+                </a>
+                <a class="nav-item disabled" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    <span>Automation</span>
+                </a>
+
+                <div class="nav-section">SETTINGS</div>
+                <a class="nav-item disabled" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-profile">
+                <div class="avatar">OP</div>
+                <div class="profile-info">
+                    <div class="profile-name">Operator</div>
+                    <div class="profile-role">Administrator</div>
+                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+        </aside>
+
+        <!-- ============================================================
+             MAIN AREA
+             ============================================================ -->
+        <main class="main-area">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+                    </button>
+                    <div class="search-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        <input type="text" placeholder="Search resources, services...">
+                        <span class="kbd">Ctrl K</span>
+                    </div>
+                </div>
+                <div class="topbar-right">
+                    <div class="host-badge">
+                        <span class="dot"></span>
+                        <span>Host: {{ server_name }}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </div>
+                    <button class="notif-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        <span class="notif-count" id="notif-count"></span>
+                    </button>
+                    <div class="topbar-profile">
+                        <div class="avatar">OP</div>
+                        <span>Operator</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="content-body">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div>
+                        <h1>Infrastructure Dashboard</h1>
+                        <div class="status-line" id="platform-status-line">
+                            <span class="status-dot offline" id="platform-dot"></span>
+                            <span id="platform-status-text">System Status: Checking...</span>
+                        </div>
+                        <p class="page-subtitle">Overall environment health state based on VM connectivity.</p>
+                    </div>
+                    <button class="btn-outline" onclick="location.reload()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+                        Refresh Data
+                    </button>
+                </div>
+
+                <!-- Alerts -->
+                <div class="alerts-container" id="alerts-container">
+                    {% if analytics.alerts %}
+                    {% for alert in analytics.alerts %}
+                    <div class="alert-card">
+                        <span class="alert-badge">ALERT</span>
+                        <span>{{ alert }}</span>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card accent-purple">
+                        <div class="kpi-top">
+                            <div class="kpi-icon purple">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
+                            </div>
+                            <span class="kpi-label">Virtual Machines</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="kpi-vm-count">0</span>
+                        </div>
+                        <span class="kpi-sub">Total VMs</span>
+                    </div>
+
+                    <div class="kpi-card accent-blue">
+                        <div class="kpi-top">
+                            <div class="kpi-icon blue">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M15 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/><path d="M9 2v2"/><path d="M9 20v2"/></svg>
+                            </div>
+                            <span class="kpi-label">CPU Usage</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="latest-cpu-val">{% if latest_metric %}{{ latest_metric.cpu }}{% else %}—{% endif %}<span class="kpi-unit">%</span></span>
+                        </div>
+                        <span class="kpi-sub">of total capacity</span>
+                        <div class="kpi-sparkline"><canvas id="sparkCpu"></canvas></div>
+                    </div>
+
+                    <div class="kpi-card accent-green">
+                        <div class="kpi-top">
+                            <div class="kpi-icon green">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+                            </div>
+                            <span class="kpi-label">Memory Usage</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="latest-ram-val">{% if latest_metric %}{{ latest_metric.ram }}{% else %}—{% endif %}<span class="kpi-unit">%</span></span>
+                        </div>
+                        <span class="kpi-sub">of total capacity</span>
+                        <div class="kpi-sparkline"><canvas id="sparkRam"></canvas></div>
+                    </div>
+
+                    <div class="kpi-card accent-amber">
+                        <div class="kpi-top">
+                            <div class="kpi-icon amber">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/></svg>
+                            </div>
+                            <span class="kpi-label">Disk Allocation</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="latest-disk-val">{% if latest_metric %}{{ latest_metric.disk }}{% else %}—{% endif %}<span class="kpi-unit">%</span></span>
+                        </div>
+                        <span class="kpi-sub">of total capacity</span>
+                        <div class="kpi-sparkline"><canvas id="sparkDisk"></canvas></div>
+                    </div>
+
+                    <div class="kpi-card accent-cyan">
+                        <div class="kpi-top">
+                            <div class="kpi-icon cyan">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            </div>
+                            <span class="kpi-label">System Uptime</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <span class="kpi-value" id="latest-uptime-val">{% if latest_metric %}{{ latest_metric.uptime }}{% else %}—{% endif %}<span class="kpi-unit"> hrs</span></span>
+                        </div>
+                        <span class="kpi-sub">Total uptime</span>
+                    </div>
+                </div>
+
+                <!-- Middle Row: Chart + System Overview + Recent Activity -->
+                <div class="middle-grid">
+                    <!-- Resource Utilization -->
+                    <div class="panel">
+                        <div class="panel-head">
+                            <span class="panel-title">Resource Utilization</span>
+                            <span class="time-dropdown">
+                                Last 1 Hour
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                            </span>
+                        </div>
+                        <div class="chart-legend">
+                            <span class="legend-item"><span class="legend-dot" style="background:#3B82F6"></span> CPU (%)</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#10B981"></span> Memory (%)</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#F59E0B"></span> Disk (%)</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#8B5CF6"></span> Network (Mbps)</span>
+                        </div>
+                        <div class="chart-area">
+                            <canvas id="resourceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- System Overview -->
+                    <div class="panel">
+                        <div class="panel-head">
+                            <span class="panel-title">System Overview</span>
+                        </div>
+                        <div class="overview-donut">
+                            <div class="donut-wrap">
+                                <canvas id="donutChart"></canvas>
+                                <div class="donut-center">
+                                    <div class="label">System Health</div>
+                                    <div class="value offline" id="donut-status">Offline</div>
+                                </div>
+                            </div>
+                            <div class="status-list">
+                                <div class="status-row">
+                                    <span class="status-row-left"><span class="dot" id="st-vm-dot" style="background:var(--danger)"></span><span class="status-label-text">VM Connectivity</span></span>
+                                    <span class="status-value offline" id="st-vm-val">Offline</span>
+                                </div>
+                                <div class="status-row">
+                                    <span class="status-row-left"><span class="dot" id="st-host-dot" style="background:var(--success)"></span><span class="status-label-text">Host Status</span></span>
+                                    <span class="status-value online" id="st-host-val">Online</span>
+                                </div>
+                                <div class="status-row">
+                                    <span class="status-row-left"><span class="dot" id="st-net-dot" style="background:var(--success)"></span><span class="status-label-text">Network Status</span></span>
+                                    <span class="status-value online" id="st-net-val">Online</span>
+                                </div>
+                                <div class="status-row">
+                                    <span class="status-row-left"><span class="dot" id="st-stor-dot" style="background:var(--warning)"></span><span class="status-label-text">Storage Status</span></span>
+                                    <span class="status-value warn" id="st-stor-val">Warning</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="panel">
+                        <div class="panel-head">
+                            <span class="panel-title">Recent Activity</span>
+                            <span class="panel-action">View All</span>
+                        </div>
+                        <div class="activity-list" id="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-icon blue">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                                </div>
+                                <div class="activity-info">
+                                    <div class="activity-title">Metrics collected</div>
+                                    <div class="activity-sub">Telemetry capture</div>
+                                </div>
+                                <span class="activity-time">Just now</span>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon green">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                </div>
+                                <div class="activity-info">
+                                    <div class="activity-title">Health check passed</div>
+                                    <div class="activity-sub">System monitor</div>
+                                </div>
+                                <span class="activity-time">1m ago</span>
+                            </div>
+                            <div class="activity-item" id="activity-vm-item">
+                                <div class="activity-icon red" id="activity-vm-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                                </div>
+                                <div class="activity-info">
+                                    <div class="activity-title" id="activity-vm-title">VM status polling</div>
+                                    <div class="activity-sub" id="activity-vm-sub">Checking...</div>
+                                </div>
+                                <span class="activity-time" id="activity-vm-time">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VM Table Section -->
+                <div class="panel vm-section">
+                    <div class="vm-header">
+                        <div class="vm-header-left">
+                            <span class="vm-title">Virtual Machines</span>
+                            <div class="vm-search">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                <input type="text" placeholder="Search VMs...">
+                            </div>
+                        </div>
+                        <div class="vm-header-right">
+                            <button class="btn-sm btn-ghost">View All</button>
+                            <button class="btn-sm btn-primary">+ Add VM</button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Resource Group</th>
+                                    <th>Location</th>
+                                    <th>CPU</th>
+                                    <th>Memory</th>
+                                    <th>IP Address</th>
+                                    <th>Uptime</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vm-table-body">
+                                <tr id="vm-row" style="display:none;">
+                                    <td id="vm-row-name" style="font-weight:600;">—</td>
+                                    <td><span class="badge badge-gray" id="vm-row-status"><span class="bdot"></span> Checking...</span></td>
+                                    <td id="vm-row-rg">—</td>
+                                    <td>Azure</td>
+                                    <td id="vm-row-cpu">—</td>
+                                    <td id="vm-row-ram">—</td>
+                                    <td id="vm-row-ip">{{ server_name }}</td>
+                                    <td id="vm-row-uptime">—</td>
+                                    <td>
+                                        <div class="vm-actions">
+                                            <button class="vm-act-btn start" id="btn-start" onclick="handleVMAction('start')" disabled>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg> Start
+                                            </button>
+                                            <button class="vm-act-btn restart" id="btn-restart" onclick="handleVMAction('restart')" disabled>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg> Restart
+                                            </button>
+                                            <button class="vm-act-btn stop" id="btn-stop" onclick="handleVMAction('stop')" disabled>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/></svg> Stop
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="vm-empty-row">
+                                    <td colspan="9">
+                                        <div class="empty-state">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/></svg>
+                                            <div class="empty-title">No virtual machines found</div>
+                                            <div class="empty-sub">Get started by creating your first virtual machine.</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- VM Error Banner -->
+                    <div class="vm-error-banner" id="vm-error-banner"></div>
+                </div>
+
+                <!-- Metric Capture History -->
+                <div class="panel metric-section">
+                    <div class="panel-head">
+                        <span class="panel-title">Metric Capture History</span>
+                        <div class="vm-search">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="table-search-input" placeholder="Search logs..." onkeyup="filterTable()">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="metrics-table">
+                            <thead>
+                                <tr>
+                                    <th>Captured Timestamp</th>
+                                    <th>CPU</th>
+                                    <th>RAM</th>
+                                    <th>Disk Used</th>
+                                    <th>Status Note (Editable)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="metrics-table-body">
+                                {% for metric in recent_metrics %}
+                                <tr>
+                                    <td style="font-weight: 500;">{{ metric.created_at }}</td>
+                                    <td>
+                                        <span class="badge {% if metric.cpu < 60 %}badge-success{% elif metric.cpu < 85 %}badge-warning{% else %}badge-danger{% endif %}">
+                                            {{ metric.cpu }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if metric.ram < 60 %}badge-success{% elif metric.ram < 85 %}badge-warning{% else %}badge-danger{% endif %}">
+                                            {{ metric.ram }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ metric.disk }}%</td>
+                                    <td class="note-cell">
+                                        <div id="note-display-{{ metric.id }}" class="note-display">
+                                            <span class="note-text">{{ metric.note|default:"—" }}</span>
+                                            <button class="note-edit-btn" onclick="showEditForm('{{ metric.id }}')">Edit</button>
+                                        </div>
+                                        <form id="note-form-{{ metric.id }}" class="note-form" action="{% url 'update_metric_note' metric.id %}" method="POST" style="display:none;">
+                                            {% csrf_token %}
+                                            <input type="text" name="note" class="note-input" value="{{ metric.note|default:'' }}" placeholder="Add note...">
+                                            <button type="submit" class="note-save-btn">Save</button>
+                                            <button type="button" class="note-cancel-btn" onclick="hideEditForm('{{ metric.id }}')">Cancel</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                                        No captured metrics available. Check if your VM is reachable.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Performance Analytics (compact) -->
+                <div class="middle-grid" style="margin-top:16px;">
+                    <div class="panel">
+                        <div class="panel-head"><span class="panel-title">1-Hour Averages</span></div>
+                        <table>
+                            <tr><td style="color:var(--text-muted)">CPU</td><td style="text-align:right;font-weight:600" id="stat-hour-cpu">{{ analytics.hour_stats.cpu }}%</td></tr>
+                            <tr><td style="color:var(--text-muted)">RAM</td><td style="text-align:right;font-weight:600" id="stat-hour-ram">{{ analytics.hour_stats.ram }}%</td></tr>
+                            <tr><td style="color:var(--text-muted)">Disk</td><td style="text-align:right;font-weight:600" id="stat-hour-disk">{{ analytics.hour_stats.disk }}%</td></tr>
+                        </table>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-head"><span class="panel-title">24-Hour Averages</span></div>
+                        <table>
+                            <tr><td style="color:var(--text-muted)">CPU</td><td style="text-align:right;font-weight:600" id="stat-day-cpu">{{ analytics.day_stats.cpu }}%</td></tr>
+                            <tr><td style="color:var(--text-muted)">RAM</td><td style="text-align:right;font-weight:600" id="stat-day-ram">{{ analytics.day_stats.ram }}%</td></tr>
+                            <tr><td style="color:var(--text-muted)">Disk</td><td style="text-align:right;font-weight:600" id="stat-day-disk">{{ analytics.day_stats.disk }}%</td></tr>
+                        </table>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-head"><span class="panel-title">Lifetime Peak Records</span></div>
+                        <table>
+                            <tr><td style="color:var(--text-muted)">Peak CPU</td><td style="text-align:right;font-weight:600;color:var(--danger)" id="stat-peak-cpu">{{ analytics.peaks.cpu }}%</td></tr>
+                            <tr><td style="color:var(--text-muted)">Peak Memory</td><td style="text-align:right;font-weight:600;color:var(--danger)" id="stat-peak-ram">{{ analytics.peaks.ram }}%</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hidden bridge elements for script compatibility -->
+    <span id="vm-status-badge" style="display:none;"><span id="vm-status-text"></span></span>
+    <span id="vm-resource-info" style="display:none;"></span>
+
+    <!-- Django chart data injected as JSON -->
     {{ labels|json_script:"chart-labels" }}
     {{ cpu_data|json_script:"cpu-data" }}
     {{ ram_data|json_script:"ram-data" }}
     {{ disk_data|json_script:"disk-data" }}
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Note inline edit script
-        function showEditForm(id) {
-            document.getElementById('note-display-' + id).style.display = 'none';
-            document.getElementById('note-form-' + id).style.display = 'flex';
-            document.getElementById('note-form-' + id).querySelector('.note-input').focus();
-        }
-
-        function hideEditForm(id) {
-            document.getElementById('note-display-' + id).style.display = 'flex';
-            document.getElementById('note-form-' + id).style.display = 'none';
-        }
-
-        // Charts configuration
-        const labels = JSON.parse(document.getElementById('chart-labels').textContent);
-        const cpuData = JSON.parse(document.getElementById('cpu-data').textContent);
-        const ramData = JSON.parse(document.getElementById('ram-data').textContent);
-
-        const chartOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                x: {
-                    grid: { color: 'rgba(255, 255, 255, 0.03)' },
-                    ticks: { color: '#9ca3af', font: { size: 10 } }
-                },
-                y: {
-                    grid: { color: 'rgba(255, 255, 255, 0.03)' },
-                    ticks: { color: '#9ca3af', font: { size: 10 } },
-                    min: 0,
-                    max: 100
-                }
-            }
-        };
-
-        // CPU Line Chart
-        window.cpuChart = new Chart(document.getElementById('cpuChart'), {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'CPU Usage %',
-                    data: cpuData,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    fill: true,
-                    tension: 0.3,
-                    borderWidth: 2,
-                    pointRadius: 1,
-                    pointHoverRadius: 4
-                }]
-            },
-            options: chartOptions
-        });
-
-        // RAM Line Chart
-        window.ramChart = new Chart(document.getElementById('ramChart'), {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'RAM Usage %',
-                    data: ramData,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    fill: true,
-                    tension: 0.3,
-                    borderWidth: 2,
-                    pointRadius: 1,
-                    pointHoverRadius: 4
-                }]
-            },
-            options: chartOptions
-        });
-    </script>
+    <script src="{% static 'dashboard/js/dashboard.js' %}?v=1.0.1"></script>
     <script src="{% static 'dashboard/js/vm_manager.js' %}"></script>
 </body>
 </html>
