@@ -91,12 +91,8 @@ My objective for this project was to learn docker and containerization, and depl
 
 ## Newly Added Features (Azure VM Lifecycle & Real-Time Telemetry Dashboard)
 
-We have extended Infratech to support direct VM lifecycle management and real-time frontend telemetry updates:
+The image shown below is only a visual interpretation. Future updates might coincide within the dashboard.
 
-### 1. Azure VM Lifecycle Management App (`vm_manager`)
-- **Direct VM Operations**: Start, Stop (Power Off), Restart, and Deallocate your target Azure VM directly from the Infratech dashboard.
-- **Asynchronous Execution**: VM operations are initiated asynchronously using non-blocking Azure SDK pollers, allowing the API views to return immediate confirmation while Azure handles the operation in the background.
-- **Persistent Azure CLI Auth in Docker**: Django's container environment includes the `azure-cli` package. A persistent Docker volume named `azure_config` is mapped to `/root/.azure` inside the Django container, preserving authenticated sessions across docker rebuilds.
-
+<img width="1862" height="927" alt="image" src="https://github.com/user-attachments/assets/561c5a0f-0202-4d11-9c79-7030c7f94cc9" />
 
 
